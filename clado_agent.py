@@ -37,7 +37,7 @@ class CladoAgent(A2AServer):
         api_key = os.getenv("CLADO_API_KEY")
         if not api_key:
             return "Clado API key not set. Please set CLADO_API_KEY in your environment."
-        url = "https://search.clado.ai/api/search/users"
+        url = "https://search.clado.ai/api/search"
         headers = {"Authorization": f"Bearer {api_key}"}
         params = {"query": query, "limit": limit, "acceptance_threshold": acceptance_threshold}
         if school:
