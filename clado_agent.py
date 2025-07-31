@@ -38,9 +38,6 @@ class CladoAgent(A2AServer):
         if not api_key:
             return "Clado API key not set. Please set CLADO_API_KEY in your environment."
         
-        # Ensure API key has the correct format
-        if not api_key.startswith("lk_"):
-            return "Invalid API key format. API key must start with 'lk_'"
         
         url = "https://search.clado.ai/api/search"
         headers = {
