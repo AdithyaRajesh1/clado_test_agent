@@ -37,31 +37,57 @@ class CladoAgent(A2AServer):
         api_key = os.getenv("CLADO_API_KEY")
         if not api_key:
             return "Clado API key not set. Please set CLADO_API_KEY in your environment."
+        
+        # Ensure API key has the correct format
+        if not api_key.startswith("lk_"):
+            return "Invalid API key format. API key must start with 'lk_'"
+        
         url = "https://search.clado.ai/api/search"
-        headers = {"Authorization": f"Bearer {api_key}"}
-        params = {"query": query, "limit": limit, "acceptance_threshold": acceptance_threshold}
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Accept": "application/json"
+        }
+        
+        # Prepare query parameters according to API spec
+        params = {
+            "query": query,
+            "limit": limit
+        }
         if school:
             params["school"] = school
         if company:
             params["company"] = company
+            
+        print(f"Sending GET request to {url}")
+        print(f"Headers: {headers}")
+        print(f"Query params: {params}")
+        
         try:
             with httpx.Client(timeout=30) as client:
+                # Let httpx handle the URL encoding automatically
                 resp = client.get(url, headers=headers, params=params)
+                print(f"Actual request URL: {resp.request.url}")
+                print(f"Response status: {resp.status_code}")
                 print(f"Response: {resp.text}")
+                
                 if resp.status_code != 200:
                     return f"Clado API error: {resp.status_code} {resp.text}"
+                
                 data = resp.json()
-                print(f"Data: {data}")
+                print(f"Parsed data: {data}")
                 results = data.get("results", [])
                 print(f"Results: {results}")
+                
                 if not results:
                     return "No matching profiles found."
+                
                 summary = []
                 for r in results:
                     p = r.get("profile", {})
-                    summary.append(f"- {p.get('name')} ({p.get('title', 'N/A')} at {p.get('headline', 'N/A')}) | {p.get('location', '')} | {p.get('linkedin_url', '')}")
-                return "".join(summary)
+                    summary.append(f"- {p.get('name')} ({p.get('headline', 'N/A')}) | {p.get('location', '')} | {p.get('linkedin_url', '')}")
+                return "\n".join(summary)
         except Exception as e:
+            print(f"Exception occurred: {e}")
             return f"Error calling Clado API: {e}"
     
     def handle_task(self, task):
